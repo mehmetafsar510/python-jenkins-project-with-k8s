@@ -88,6 +88,8 @@ Resources:
           #! /bin/bash
           yum update -y
           yum install MariaDB-server -y
+          systemctl start mariadb
+          systemctl enable mariadb
           hostnamectl set-hostname jenkins-server
           yum install git -y
           amazon-linux-extras install java-openjdk11 -y
