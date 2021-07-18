@@ -34,19 +34,7 @@ pipeline{
         stage('create phonebook table in rds'){
             agent any
             steps{
-                sh """
-                #!/bin/bash
-                mysql -u ${MYSQL_DATABASE_USER} -h ${MYSQL_DATABASE_HOST} -p${MYSQL_DATABASE_PASSWORD} << EOF
-                USE ${MYSQL_DATABASE_DB};
-                CREATE TABLE IF NOT EXISTS phonebook.phonebook(
-                id INT NOT NULL AUTO_INCREMENT,
-                name VARCHAR(100) NOT NULL,
-                number VARCHAR(100) NOT NULL,
-                PRIMARY KEY (id)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                exit;
-                EOF
-                """
+                sh "mysql -u ${MYSQL_DATABASE_USER} -h ${MYSQL_DATABASE_HOST} -p${MYSQL_DATABASE_PASSWORD} < phonebook.sql"
             }
         } 
        
