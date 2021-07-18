@@ -10,7 +10,7 @@ pipeline{
         ECR_REGISTRY = "646075469151.dkr.ecr.us-east-1.amazonaws.com"
         APP_REPO_NAME= "phonebook/app"
         CFN_KEYPAIR="the_doctor"
-        AWS_REGION = "us-east-2"
+        AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
