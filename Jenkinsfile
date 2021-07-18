@@ -195,6 +195,7 @@ pipeline{
                 sh "sed -i 's/{{ECR_REGISTRY}}/$ECR_REGISTRY/$APP_REPO_NAME:latest/g' k8s/deployment-app.yaml"
                 sh "kubectl apply -f k8s"                
             }
+        }
     post {
             always {
             	echo 'Deleting all local images'
@@ -221,6 +222,4 @@ pipeline{
             }
         }
     }
-
 }
-
