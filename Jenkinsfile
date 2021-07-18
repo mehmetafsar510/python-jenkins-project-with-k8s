@@ -118,7 +118,7 @@ pipeline{
                           --query KeyMaterial \
                           --output text > ${CFN_KEYPAIR}.pem
 
-                        chmod 400 ${CFN_KEYPAIR}
+                        chmod 400 ${CFN_KEYPAIR}.pem
 
                         ssh-keygen -y -f ${CFN_KEYPAIR}.pem >> the_doctor_public.pem
                     fi
@@ -129,7 +129,7 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                sh "eksctl create cluster --region ${AWS_REGION} --node-type t2.medium --nodes 1 --nodes-min 1 --nodes-max 2 --node-volume-size 8 --name ${CLUSTER_NAME}"
+                sh "eksctl create cluster --region ${AWS_REGION} --ssh-access=true --ssh-public-key=the_doctor_public.pem --node-type t2.medium --nodes 1 --nodes-min 1 --nodes-max 2 --node-volume-size 8 --name ${CLUSTER_NAME}"
             }
         }
 
@@ -216,7 +216,6 @@ pipeline{
         }
         failure {
             sh "rm -rf '${WORKSPACE}/.env'"
-            sh "eksctl delete cluster ${CLUSTER_NAME}"
             sh """
             aws ecr delete-repository \
               --repository-name ${APP_REPO_NAME} \
@@ -229,6 +228,7 @@ pipeline{
               --skip-final-snapshot \
               --delete-automated-backups
             """
+            sh "eksctl delete cluster ${CLUSTER_NAME}"
             sh "kubectl delete -f k8s"
         }
         success {
