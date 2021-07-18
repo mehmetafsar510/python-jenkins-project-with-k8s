@@ -28,8 +28,6 @@ pipeline{
                 }
            }
         }
-
-        
        
         stage('test'){
             agent {
@@ -139,7 +137,7 @@ pipeline{
                 }
             }
         }
-    
+    }
 
         stage('check-cluster'){
             agent any
@@ -195,31 +193,33 @@ pipeline{
                 sh "sed -i 's/{{ECR_REGISTRY}}/$ECR_REGISTRY/$APP_REPO_NAME:latest/g' k8s/deployment-app.yaml"
                 sh "kubectl apply -f k8s"                
             }
-        }
-    }
-    post {
-            always {
-            	echo 'Deleting all local images'
-            	sh 'docker image prune -af'
-        	}
-            failure {
-                sh "kubectl delete -f k8s"
-                sh "eksctl delete cluster ${CLUSTER_NAME}"
-                sh """
+            post {
+                always {
+                    echo 'Deleting all local images'
+                    sh 'docker image prune -af'
+                }
+                failure {
+                    sh "kubectl delete -f k8s"
+                    sh "eksctl delete cluster ${CLUSTER_NAME}"
+                    sh """
                     aws ecr delete-repository \
                       --repository-name ${APP_REPO_NAME} \
                       --region ${AWS_REGION}\
                       --force
-                   """
-                sh """
+                    """
+                    sh """
                     aws rds delete-db-instance \
                       --db-instance-identifier mysql-instance \
                       --skip-final-snapshot \
                       --delete-automated-backups
-                   """
+                    """
                 }
-            success {
-                echo 'You are Greatttttt...'
+                success {
+                    echo 'You are the man/woman...'
+                }
             }
         }
+    }
+
 }
+
