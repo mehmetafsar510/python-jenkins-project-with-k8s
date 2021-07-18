@@ -15,7 +15,7 @@ pipeline{
     }
     stages{
         stage("compile"){
-           agent any {
+           agent{
                docker{
                    image 'python:alpine'
                }
