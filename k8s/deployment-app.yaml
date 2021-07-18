@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: 646075469151.dkr.ecr.us-east-1.amazonaws.com/phonebook/app:latest
+        image: {{ECR_REGISTRY}}
         ports:
         - containerPort: 80
         envFrom:

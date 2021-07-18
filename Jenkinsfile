@@ -1,6 +1,7 @@
 pipeline{
     agent any
     environment{
+        MYSQL_DATABASE_HOST = "mysql-instance.ct3fdmwzcn45.us-east-1.rds.amazonaws.com"
         MYSQL_DATABASE_PASSWORD = "Clarusway"
         MYSQL_DATABASE_USER = "admin"
         MYSQL_DATABASE_DB = "phonebook"
@@ -28,37 +29,7 @@ pipeline{
            }
         }
 
-        stage('creating RDS for test stage') {
-            steps {
-                echo 'creating RDS for test stage'
-                sh """
-                aws rds create-db-instance \
-                  --db-instance-identifier mysql-instance \
-                  --db-instance-class db.t2.micro \
-                  --engine mysql \
-                  --db-name ${MYSQL_DATABASE_DB} \
-                  --master-username ${MYSQL_DATABASE_USER} \
-                  --master-user-password ${MYSQL_DATABASE_PASSWORD} \
-                  --allocated-storage 20 \
-                  --tags 'Key=Name,Value=masterdb'
-                """
-            script {
-                while(true) {
-                        
-                        echo "RDS is not UP and running yet. Will try to reach again after 10 seconds..."
-                        sleep(10)
-
-                        endpoint = sh(script:'aws rds describe-db-instances --region ${AWS_REGION} --query DBInstances[*].Endpoint.Address --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
-
-                        if (endpoint.length() >= 7) {
-                            echo "My Database Endpoint Address Found: $endpoint"
-                            env.MYSQL_DATABASE_HOST = "$endpoint"
-                            break
-                        }
-                    }
-                }
-            }
-        } 
+        
        
         stage('test'){
             agent {
@@ -221,19 +192,32 @@ pipeline{
                     env.EBS_VOLUME_ID = sh(script:"aws ec2 describe-volumes --filters Name=tag:Name,Values='k8s-python-mysql2' | grep VolumeId |cut -d '\"' -f 4| head -n 1", returnStdout: true).trim()
                 }
                 sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/pv-ebs.yaml"
+                sh "sed -i 's/{{ECR_REGISTRY}}/$ECR_REGISTRY/$APP_REPO_NAME:latest/g' k8s/deployment-app.yaml"
                 sh "kubectl apply -f k8s"                
             }
-            post {
-                failure {
-                    sh "kubectl delete -f k8s"
-                    sh "eksctl delete cluster ${CLUSTER_NAME}"
-                    sh """
+    post {
+            always {
+            	echo 'Deleting all local images'
+            	sh 'docker image prune -af'
+        	}
+            failure {
+                sh "kubectl delete -f k8s"
+                sh "eksctl delete cluster ${CLUSTER_NAME}"
+                sh """
                     aws ecr delete-repository \
                       --repository-name ${APP_REPO_NAME} \
                       --region ${AWS_REGION}\
                       --force
-                    """
+                   """
+                sh """
+                    aws rds delete-db-instance \
+                      --db-instance-identifier mysql-instance \
+                      --skip-final-snapshot \
+                      --delete-automated-backups
+                   """
                 }
+            success {
+                echo 'You are Greatttttt...'
             }
         }
     }
