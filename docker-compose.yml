@@ -8,7 +8,7 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: R1234r
             MYSQL_DATABASE: phonebook
-            MYSQL_USER: clarusway
+            MYSQL_USER: admin
             MYSQL_PASSWORD: Clarusway
             MYSQL_PORT: 3306
         networks:
@@ -19,7 +19,7 @@ services:
         restart: always
         environment:
             MYSQL_DATABASE_HOST: database
-            MYSQL_DATABASE_USER: clarusway
+            MYSQL_DATABASE_USER: admin
             MYSQL_DATABASE_PASSWORD: Clarusway
             MYSQL_DATABASE_DB: phonebook
             MYSQL_DATABASE_PORT: 3306

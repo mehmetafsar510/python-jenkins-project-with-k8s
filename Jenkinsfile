@@ -9,7 +9,7 @@ pipeline{
         ECR_REGISTRY = "646075469151.dkr.ecr.us-east-1.amazonaws.com"
         APP_REPO_NAME= "phonebook/app"
         CFN_KEYPAIR="the_doctor"
-        AWS_REGION = "us-east-1"
+        AWS_REGION = "us-east-2"
         CLUSTER_NAME = "mehmet-cluster"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
@@ -197,7 +197,7 @@ pipeline{
                         if [ "$exist" == '' ]
                         then
                             
-                            echo "we alreay created this cluster...."
+                            echo "we have already created this cluster...."
                         else
                             echo 'no need to create cluster...'
                         fi
