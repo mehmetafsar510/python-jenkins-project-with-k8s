@@ -139,7 +139,7 @@ pipeline{
                 }
             }
         }
-    }
+    
 
         stage('check-cluster'){
             agent any
@@ -196,6 +196,7 @@ pipeline{
                 sh "kubectl apply -f k8s"                
             }
         }
+    }
     post {
             always {
             	echo 'Deleting all local images'
@@ -221,5 +222,4 @@ pipeline{
                 echo 'You are Greatttttt...'
             }
         }
-    }
 }
