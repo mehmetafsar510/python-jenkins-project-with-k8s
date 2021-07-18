@@ -1,7 +1,6 @@
 pipeline{
     agent any
     environment{
-        MYSQL_DATABASE_HOST = "database-42.cbanmzptkrzf.us-east-1.rds.amazonaws.com"
         MYSQL_DATABASE_PASSWORD = "Clarusway"
         MYSQL_DATABASE_USER = "admin"
         MYSQL_DATABASE_DB = "phonebook"
@@ -9,7 +8,7 @@ pipeline{
         PATH="/usr/local/bin/:${env.PATH}"
         ECR_REGISTRY = "646075469151.dkr.ecr.us-east-1.amazonaws.com"
         APP_REPO_NAME= "phonebook/app"
-        CFN_KEYPAIR="the_doctor.pem"
+        CFN_KEYPAIR="the_doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
     }
@@ -27,6 +26,38 @@ pipeline{
                     stash(name: 'compilation_result', includes: 'src/*.py*')
                 }
            }
+        }
+
+        stage('creating RDS for test stage') {
+            steps {
+                echo 'creating RDS for test stage'
+                sh """
+                aws rds create-db-instance \
+                  --db-instance-identifier mysql-instance \
+                  --db-instance-class db.t2.micro \
+                  --engine mysql \
+                  --db-name ${MYSQL_DATABASE_DB} \
+                  --master-username ${MYSQL_DATABASE_USER} \
+                  --master-user-password ${MYSQL_DATABASE_PASSWORD} \
+                  --allocated-storage 20 \
+                  --tags 'Key=Name,Value=masterdb'
+                """
+            script {
+                while(true) {
+                        
+                        echo "RDS is not UP and running yet. Will try to reach again after 10 seconds..."
+                        sleep(10)
+
+                        endpoint = sh(script:'aws rds describe-db-instances --region ${AWS_REGION} --query DBInstances[*].Endpoint.Address --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
+
+                        if (endpoint.length() >= 7) {
+                            echo "My Database Endpoint Address Found: $endpoint"
+                            env.MYSQL_DATABASE_HOST = "$endpoint"
+                            break
+                        }
+                    }
+                }
+            }
         } 
        
         stage('test'){
@@ -45,13 +76,33 @@ pipeline{
                     junit 'results.xml'
                 }
             }
-        }   
+        }  
+
+        stage('creating .env for docker-compose'){
+            agent any
+            steps{
+                writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
+            }
+        }
+
+        stage('creating ECR Repository') {
+            steps {
+                echo 'creating ECR Repository'
+                sh """
+                aws ecr create-repository \
+                  --repository-name ${APP_REPO_NAME} \
+                  --image-scanning-configuration scanOnPush=false \
+                  --image-tag-mutability MUTABLE \
+                  --region ${AWS_REGION}
+                """
+            }
+        } 
 
         stage('build'){
             agent any
             steps{
-                sh "docker build -t phonebook/app ."
-                sh 'docker tag phonebook/app "$ECR_REGISTRY/$APP_REPO_NAME":latest'
+                sh "docker build -t ${APP_REPO_NAME} ."
+                sh 'docker tag ${APP_REPO_NAME} "$ECR_REGISTRY/$APP_REPO_NAME:latest"'
             }
         }
 
@@ -59,7 +110,7 @@ pipeline{
             agent any
             steps{
                 sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
-                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME":latest'
+                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:latest"'
             }
         }
 
@@ -176,6 +227,12 @@ pipeline{
                 failure {
                     sh "kubectl delete -f k8s"
                     sh "eksctl delete cluster ${CLUSTER_NAME}"
+                    sh """
+                    aws ecr delete-repository \
+                      --repository-name ${APP_REPO_NAME} \
+                      --region ${AWS_REGION}\
+                      --force
+                    """
                 }
             }
         }

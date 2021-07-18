@@ -15,7 +15,7 @@ services:
             - clarusnet
             
     app:
-        image: 046402772087.dkr.ecr.us-east-1.amazonaws.com/matt/jenkins-handson:latest
+        image: "${ECR_REGISTRY}/${APP_REPO_NAME}"
         restart: always
         environment:
             MYSQL_DATABASE_HOST: database
