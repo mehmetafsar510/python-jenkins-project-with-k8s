@@ -29,6 +29,25 @@ pipeline{
                 }
            }
         }
+        
+
+        stage('create phonebook table in rds'){
+            agent any
+            steps{
+                sh """
+                mysql -u ${MYSQL_DATABASE_USER} -h ${MYSQL_DATABASE_HOST} -p${MYSQL_DATABASE_PASSWORD} << EOF
+                USE ${MYSQL_DATABASE_DB};
+                CREATE TABLE IF NOT EXISTS phonebook.phonebook(
+                id INT NOT NULL AUTO_INCREMENT,
+                name VARCHAR(100) NOT NULL,
+                number VARCHAR(100) NOT NULL,
+                PRIMARY KEY (id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                exit;
+                EOF
+                """
+            }
+        } 
        
         stage('test'){
             agent {
@@ -51,9 +70,11 @@ pipeline{
         stage('creating .env for docker-compose'){
             agent any
             steps{
-                echo 'creating .env for docker-compose'
-                sh "cd ${WORKSPACE}"
-                writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
+                script {
+                    echo 'creating .env for docker-compose'
+                    sh "cd ${WORKSPACE}"
+                    writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
+                }
             }
         }
 
