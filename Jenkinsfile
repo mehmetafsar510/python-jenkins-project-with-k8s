@@ -218,7 +218,7 @@ pipeline{
             """
         }
         success {
-            echo 'You are the man/woman...'
+            echo 'You are Greattt...'
         }
     }
 }
