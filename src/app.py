@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # Configure mysql database
-app.config['MYSQL_DATABASE_HOST'] =  os.getenv('MYSQL_DATABASE_HOST')  # "database-42.cbanmzptkrzf.us-east-1.rds.amazonaws.com"
+app.config['MYSQL_DATABASE_HOST'] =  os.getenv('MYSQL_DATABASE_HOST')  # "mysql-instance.ct3fdmwzcn45.us-east-1.rds.amazonaws.com"
 app.config['MYSQL_DATABASE_PASSWORD'] = os.getenv('MYSQL_DATABASE_PASSWORD')  # "Clarusway"
 app.config['MYSQL_DATABASE_USER'] = os.getenv('MYSQL_DATABASE_USER')  # 'admin'
 app.config['MYSQL_DATABASE_DB'] = os.getenv('MYSQL_DATABASE_DB')  # "phonebook"

@@ -50,6 +50,7 @@ pipeline{
         stage('creating .env for docker-compose'){
             agent any
             steps{
+                sh "cd ${WORKSPACE}"
                 writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
             }
         }
@@ -95,19 +96,19 @@ pipeline{
             agent any
             steps{
                 sh '''
-                    if [ -f "${CFN_KEYPAIR}" ]
+                    if [ -f "${CFN_KEYPAIR}.pem" ]
                     then 
                         echo "file exists..."
                     else
                         aws ec2 create-key-pair \
-                          --region us-east-2 \
-                          --key-name ${CFN_KEYPAIR} \
+                          --region us-east-1 \
+                          --key-name ${CFN_KEYPAIR}.pem \
                           --query KeyMaterial \
-                          --output text > ${CFN_KEYPAIR}
+                          --output text > ${CFN_KEYPAIR}.pem
 
                         chmod 400 ${CFN_KEYPAIR}
 
-                        ssh-keygen -y -f ${CFN_KEYPAIR} >> the_doctor_public.pem
+                        ssh-keygen -y -f ${CFN_KEYPAIR}.pem >> the_doctor_public.pem
                     fi
                 '''                
             }
@@ -202,7 +203,7 @@ pipeline{
             sh 'docker image prune -af'
         }
         failure {
-            sh "kubectl delete -f k8s"
+            sh "rm -rf '${WORKSPACE}/.env'"
             sh "eksctl delete cluster ${CLUSTER_NAME}"
             sh """
             aws ecr delete-repository \
@@ -216,6 +217,7 @@ pipeline{
               --skip-final-snapshot \
               --delete-automated-backups
             """
+            sh "kubectl delete -f k8s"
         }
         success {
             echo 'You are Greattt...'
