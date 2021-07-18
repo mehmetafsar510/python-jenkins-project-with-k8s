@@ -12,6 +12,7 @@ pipeline{
         CFN_KEYPAIR="the_doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
+        GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
         stage("compile"){
@@ -50,6 +51,7 @@ pipeline{
         stage('creating .env for docker-compose'){
             agent any
             steps{
+                echo 'creating .env for docker-compose'
                 sh "cd ${WORKSPACE}"
                 writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
             }
