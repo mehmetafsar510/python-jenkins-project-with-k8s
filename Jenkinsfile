@@ -30,6 +30,37 @@ pipeline{
            }
         }
         
+        stage('creating RDS for test stage') {
+            steps {
+                echo 'creating RDS for test stage'
+                sh """
+                aws rds create-db-instance \
+                  --db-instance-identifier mysql-instance \
+                  --db-instance-class db.t2.micro \
+                  --engine mysql \
+                  --db-name ${MYSQL_DATABASE_DB} \
+                  --master-username ${MYSQL_DATABASE_USER} \
+                  --master-user-password ${MYSQL_DATABASE_PASSWORD} \
+                  --allocated-storage 20 \
+                  --tags 'Key=Name,Value=masterdb'
+                """
+            script {
+                while(true) {
+                        
+                        echo "RDS is not UP and running yet. Will try to reach again after 10 seconds..."
+                        sleep(10)
+
+                        endpoint = sh(script:'aws rds describe-db-instances --region ${AWS_REGION} --query DBInstances[*].Endpoint.Address --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
+
+                        if (endpoint.length() >= 7) {
+                            echo "My Database Endpoint Address Found: $endpoint"
+                            env.MYSQL_DATABASE_HOST = "$endpoint"
+                            break
+                        }
+                    }
+                }
+            }
+        } 
 
         stage('create phonebook table in rds'){
             agent any
