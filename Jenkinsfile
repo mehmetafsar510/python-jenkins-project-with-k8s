@@ -35,7 +35,7 @@ pipeline{
             agent any
             steps{
                 sh """
-                mysql -u ${MYSQL_DATABASE_USER} -h ${MYSQL_DATABASE_HOST} -p${MYSQL_DATABASE_PASSWORD} << EOF
+                mysql -u ${MYSQL_DATABASE_USER} -h ${MYSQL_DATABASE_HOST} -p${MYSQL_DATABASE_PASSWORD} << `EOF'
                 USE ${MYSQL_DATABASE_DB};
                 CREATE TABLE IF NOT EXISTS phonebook.phonebook(
                 id INT NOT NULL AUTO_INCREMENT,
