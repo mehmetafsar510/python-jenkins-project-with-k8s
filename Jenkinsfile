@@ -187,12 +187,12 @@ pipeline{
             steps{
                 sh '''
                     #!/bin/sh
-                    running=$(sudo lsof -i:80) || true
+                    running=$(sudo lsof -nP -iTCP:80 -sTCP:LISTEN) || true
                     
                     if [ "$running" != '' ]
                     then
                         docker-compose down
-                        exist="$(eksctl get cluster | grep mehmet-cluster)" || true
+                        exist="$(eksctl get cluster | grep ${CLUSTER_NAME})" || true
 
                         if [ "$exist" == '' ]
                         then
