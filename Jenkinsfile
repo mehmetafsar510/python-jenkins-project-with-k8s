@@ -8,7 +8,7 @@ pipeline{
         PATH="/usr/local/bin/:${env.PATH}"
         ECR_REGISTRY = "646075469151.dkr.ecr.us-east-1.amazonaws.com"
         APP_REPO_NAME= "phonebook/app"
-        CFN_KEYPAIR="the_doctor"
+        CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
@@ -121,7 +121,7 @@ pipeline{
         stage('push'){
             agent any
             steps{
-                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
+                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
                 sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:latest"'
             }
         }
@@ -129,7 +129,7 @@ pipeline{
         stage('compose'){
             agent any
             steps{
-                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
+                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
                 sh "docker-compose up -d"
             }
         }
@@ -143,7 +143,7 @@ pipeline{
                         echo "file exists..."
                     else
                         aws ec2 create-key-pair \
-                          --region us-east-1 \
+                          --region ${AWS_REGION} \
                           --key-name ${CFN_KEYPAIR}.pem \
                           --query KeyMaterial \
                           --output text > ${CFN_KEYPAIR}.pem
@@ -258,6 +258,11 @@ pipeline{
               --skip-final-snapshot \
               --delete-automated-backups
             """
+            sh """
+            aws ec2 delete-key-pair \
+              --key-name ${CFN_KEYPAIR}.pem
+            """
+            sh "rm -rf '${WORKSPACE}/the_doctor_public.pem'"
             sh "eksctl delete cluster ${CLUSTER_NAME}"
             sh "kubectl delete -f k8s"
         }
