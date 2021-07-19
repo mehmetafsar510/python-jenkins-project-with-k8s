@@ -259,6 +259,14 @@ pipeline{
               --delete-automated-backups
             """
             sh """
+            aws ec2 detach-volume \
+              --volume-id ${EBS_VOLUME_ID} \
+            """
+            sh """
+            aws ec2 delete-volume \
+              --volume-id ${EBS_VOLUME_ID} \
+            """
+            sh """
             aws ec2 delete-key-pair \
               --key-name ${CFN_KEYPAIR}.pem
             """
