@@ -77,7 +77,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-02354e95b39ca8dec #ami-0233c2d874b811deb  us-east-2
-      InstanceType: t3a.medium
+      InstanceType: t2.small
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref EC2ConnectProfile
       SecurityGroupIds:

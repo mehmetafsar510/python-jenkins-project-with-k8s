@@ -4,7 +4,7 @@ services:
     database:
         image: mysql:5.7
         volumes:
-          - db-data:/var/lib/mysql
+          - /my/own/datadir:/var/lib/mysql
         environment:
             MYSQL_ROOT_PASSWORD: R1234r
             MYSQL_DATABASE: phonebook
