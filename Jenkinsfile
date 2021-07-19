@@ -273,7 +273,7 @@ pipeline{
             sh "rm -rf '${WORKSPACE}/the_doctor_public.pem'"
             sh "rm -rf '${WORKSPACE}/${CFN_KEYPAIR}.pem'"
             sh "eksctl delete cluster ${CLUSTER_NAME}"
-            sh "docker rm -f $(docker ps -a -q)"
+            sh "docker rm -f '\$(docker ps -a -q)'"
             sh "kubectl delete -f k8s"
         }
         success {
