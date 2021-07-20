@@ -1,7 +1,6 @@
 pipeline{
     agent any
     environment{
-        DB_İNSTANCE_İDENTİFİER = "mysql-instance"
         MYSQL_DATABASE_PASSWORD = "Clarusway"
         MYSQL_DATABASE_USER = "admin"
         MYSQL_DATABASE_DB = "phonebook"
@@ -35,7 +34,7 @@ pipeline{
             steps{
                 echo 'creating RDS for test stage'
                 sh '''
-                    RDS=$(aws rds describe-db-instances | grep ${DB_İNSTANCE_İDENTİFİER} |cut -d '"' -f 4| head -n 1)  || true
+                    RDS=$(aws rds describe-db-instances | grep mysql-instance |cut -d '"' -f 4| head -n 1)  || true
                     if [ "$RDS" == '' ]
                     then
                         aws rds create-db-instance \
