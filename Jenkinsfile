@@ -28,21 +28,27 @@ pipeline{
                 }
            }
         }
-        
-        stage('creating RDS for test stage') {
-            steps {
+
+        stage('creating RDS for test stage'){
+            agent any
+            steps{
                 echo 'creating RDS for test stage'
-                sh """
-                aws rds create-db-instance \
-                  --db-instance-identifier mysql-instance \
-                  --db-instance-class db.t2.micro \
-                  --engine mysql \
-                  --db-name ${MYSQL_DATABASE_DB} \
-                  --master-username ${MYSQL_DATABASE_USER} \
-                  --master-user-password ${MYSQL_DATABASE_PASSWORD} \
-                  --allocated-storage 20 \
-                  --tags 'Key=Name,Value=masterdb'
-                """
+                sh '''
+                    RDS=$(aws rds describe-db-instances | grep db-instance-identifier |cut -d '"' -f 4| head -n 1)  || true
+                    if [ "$RDS" == '' ]
+                    then
+                        aws rds create-db-instance \
+                          --db-instance-identifier mysql-instance \
+                          --db-instance-class db.t2.micro \
+                          --engine mysql \
+                          --db-name ${MYSQL_DATABASE_DB} \
+                          --master-username ${MYSQL_DATABASE_USER} \
+                          --master-user-password ${MYSQL_DATABASE_PASSWORD} \
+                          --allocated-storage 20 \
+                          --tags 'Key=Name,Value=masterdb'
+                          
+                    fi
+                '''
             script {
                 while(true) {
                         
@@ -59,7 +65,7 @@ pipeline{
                     }
                 }
             }
-        } 
+        }
 
         stage('create phonebook table in rds'){
             agent any
@@ -86,27 +92,39 @@ pipeline{
             }
         }  
 
-        stage('creating .env for docker-compose'){
+        stage('creating .env for docker-composer'){
             agent any
             steps{
-                script {
-                    echo 'creating .env for docker-compose'
-                    sh "cd ${WORKSPACE}"
-                    writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
-                }
+                echo 'creating .env for docker-compose'
+                sh """
+                    if [ -f '.env' ]
+                    then 
+                        echo 'file exists...'
+                    else
+                        echo 'creating .env for docker-compose'
+                        sh 'cd ${WORKSPACE}'
+                        writeFile file: '.env', text: 'ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest'
+                    fi
+                """                
             }
         }
 
-        stage('creating ECR Repository') {
-            steps {
+        stage('creating ECR Repository'){
+            agent any
+            steps{
                 echo 'creating ECR Repository'
-                sh """
-                aws ecr create-repository \
-                  --repository-name ${APP_REPO_NAME} \
-                  --image-scanning-configuration scanOnPush=false \
-                  --image-tag-mutability MUTABLE \
-                  --region ${AWS_REGION}
-                """
+                sh '''
+                    RepoArn=$(aws ecr describe-repositories | grep ${APP_REPO_NAME} |cut -d '"' -f 4| head -n 1 )  || true
+                    if [ "$RepoArn" == '' ]
+                    then
+                        aws ecr create-repository \
+                          --repository-name ${APP_REPO_NAME} \
+                          --image-scanning-configuration scanOnPush=false \
+                          --image-tag-mutability MUTABLE \
+                          --region ${AWS_REGION}
+                        
+                    fi
+                '''
             }
         } 
 
@@ -159,7 +177,23 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                sh "eksctl create cluster --region ${AWS_REGION} --ssh-access=true --ssh-public-key=the_doctor_public.pem --node-type t2.medium --nodes 1 --nodes-min 1 --nodes-max 2 --node-volume-size 8 --name ${CLUSTER_NAME} --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f"
+                sh '''
+                    Cluster=$(eksctl get cluster | grep ${CLUSTER_NAME})  || true
+                    if [ "$Cluster" == '' ]
+                    then
+                        eksctl create cluster \
+                            --region ${AWS_REGION} \
+                            --ssh-access=true \
+                            --ssh-public-key=the_doctor_public.pem \
+                            --node-type t2.medium \
+                            --nodes 1 --nodes-min 1 --nodes-max 2 \
+                            --node-volume-size 8 --name ${CLUSTER_NAME} \
+                            --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+                    else
+                        echo "${CLUSTER_NAME} has already created..."
+                 
+                    fi
+                '''
             }
         }
 

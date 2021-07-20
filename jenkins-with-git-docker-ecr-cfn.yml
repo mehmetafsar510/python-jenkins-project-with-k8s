@@ -45,6 +45,8 @@ Resources:
       ManagedPolicyArns:
         - !Ref InstanceConnectPolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
         - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
         - arn:aws:iam::aws:policy/AdministratorAccess
   EC2ConnectProfile:
