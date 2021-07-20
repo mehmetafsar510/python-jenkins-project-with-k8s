@@ -14,6 +14,21 @@ pipeline{
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
+        stage('Setup') {
+            steps {
+              script {
+
+                println "Getting the kubectl and eksctl binaries..."
+                sh """
+                  curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_\$(uname -s)_amd64.tar.gz" | tar xzf -
+                  curl --silent -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
+                  chmod u+x ./eksctl ./kubectl
+                  ls -l ./eksctl ./kubectl
+                """
+              }
+            }
+        } 
+
         stage("compile"){
            agent{
                docker{
@@ -171,23 +186,45 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                sh '''
-                    Cluster=$(eksctl get cluster | grep ${CLUSTER_NAME})  || true
-                    if [ "$Cluster" == '' ]
-                    then
-                        eksctl create cluster \
-                            --region ${AWS_REGION} \
-                            --ssh-access=true \
-                            --ssh-public-key=the_doctor_public.pem \
-                            --node-type t2.medium \
-                            --nodes 1 --nodes-min 1 --nodes-max 2 \
-                            --node-volume-size 8 --name ${CLUSTER_NAME} \
-                            --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
-                    else
-                        echo "${CLUSTER_NAME} has already created..."
-                 
-                    fi
-                '''
+                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
+                    sh '''
+                        Cluster=$(eksctl get cluster | grep ${CLUSTER_NAME})  || true
+                        if [ "$Cluster" == '' ]
+                        then
+                            eksctl create cluster \
+                                --region ${AWS_REGION} \
+                                --ssh-access=true \
+                                --ssh-public-key=the_doctor_public.pem \
+                                --node-type t2.medium \
+                                --nodes 1 --nodes-min 1 --nodes-max 2 \
+                                --node-volume-size 8 --name ${CLUSTER_NAME} \
+                                --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+                        else
+                            echo "${CLUSTER_NAME} has already created..."
+
+                        fi
+                    '''
+                }    
+            }
+        }
+
+        stage('Setting up Cloudwatch logs'){
+            agent any
+            steps{
+                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
+                    echo "Setting up Cloudwatch logs."
+                    sh "eksctl utils update-cluster-logging --enable-types all --approve --cluster ${CLUSTER_NAME}"
+                }    
+            }
+        }
+
+        stage('Cluster setup'){
+            agent any
+            steps{
+                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
+                    echo "Setting up Cloudwatch logs."
+                    sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}"
+                }    
             }
         }
 

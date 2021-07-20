@@ -45,8 +45,6 @@ Resources:
       ManagedPolicyArns:
         - !Ref InstanceConnectPolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
         - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
         - arn:aws:iam::aws:policy/AdministratorAccess
   EC2ConnectProfile:
@@ -124,11 +122,11 @@ Resources:
           mkdir -p /home/jenkins/.docker
           cd /home/jenkins/.docker
           echo '{"credsStore": "ecr-login"}' > config.json
-          curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/linux/amd64/kubectl
-          chmod +x ./kubectl
-          mv ./kubectl /usr/local/bin
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          mv /tmp/eksctl /usr/local/bin
+          #curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/linux/amd64/kubectl
+          #chmod +x ./kubectl
+          #mv ./kubectl /usr/local/bin
+          #curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          #mv /tmp/eksctl /usr/local/bin
           
 Outputs:
   JenkinsDNS:
