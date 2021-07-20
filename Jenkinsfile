@@ -92,18 +92,14 @@ pipeline{
             }
         }  
 
-        stage('creating .env for docker-composer'){
+        stage('creating .env for docker-compose'){
             agent any
             steps{
-                echo 'creating .env for docker-compose'
-                sh """
-                    if [ -f '.env' ]
-                    then 
-                        echo 'file exists...'
-                    else
-                        writeFile file: '.env', text: 'ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest'
-                    fi
-                """                
+                script {
+                    echo 'creating .env for docker-compose'
+                    sh "cd ${WORKSPACE}"
+                    writeFile file: '.env', text: "ECR_REGISTRY=${ECR_REGISTRY}\nAPP_REPO_NAME=${APP_REPO_NAME}:latest"
+                }
             }
         }
 
