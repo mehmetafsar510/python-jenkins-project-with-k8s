@@ -1,6 +1,7 @@
 pipeline{
     agent any
     environment{
+        DBInstanceIdentifier = "mysql-instance"
         MYSQL_DATABASE_PASSWORD = "Clarusway"
         MYSQL_DATABASE_USER = "admin"
         MYSQL_DATABASE_DB = "phonebook"
@@ -34,7 +35,7 @@ pipeline{
                 echo 'creating RDS for test stage'
                 sh """
                 aws rds create-db-instance \
-                  --db-instance-identifier mysql-instance \
+                  --db-instance-identifier ${DBInstanceIdentifier} \
                   --db-instance-class db.t2.micro \
                   --engine mysql \
                   --db-name ${MYSQL_DATABASE_DB} \
