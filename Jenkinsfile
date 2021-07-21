@@ -21,8 +21,8 @@ pipeline{
                 println "Getting the kubectl and eksctl binaries..."
                 sh """
                   curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_\$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-                  curl --silent -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
-                  chmod u+x ./eksctl ./kubectl
+                  curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/linux/amd64/kubectl
+                  chmod +x ./kubectl
                   sudo mv ./kubectl /usr/local/bin
                   sudo mv /tmp/eksctl /usr/local/bin
                 """
@@ -189,10 +189,11 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh '''
-                        Cluster=$(eksctl get cluster | grep ${CLUSTER_NAME})  || true
+                        Cluster=$(eksctl get cluster --region ${AWS_REGION} | grep ${CLUSTER_NAME})  || true
                         if [ "$Cluster" == '' ]
                         then
                             eksctl create cluster \
+                                --version 1.17 \
                                 --region ${AWS_REGION} \
                                 --ssh-access=true \
                                 --ssh-public-key=the_doctor_public.pem \
