@@ -232,6 +232,27 @@ pipeline{
             }
         }
 
+        stage('Test the cluster') {
+            steps {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    echo "Testing if the K8s cluster is ready or not"
+                script {
+                    while(true) {
+                        try {
+                          sh "kubectl get nodes | grep -i Ready"
+                          echo "Successfully created  EKS cluster."
+                          break
+                        }
+                        catch(Exception) {
+                          echo 'Could not get cluster please wait'
+                          sleep(5)  
+                        } 
+                    }
+                }
+            }
+        }
+    }
+
         stage('check-cluster'){
             agent any
             steps{
