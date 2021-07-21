@@ -14,7 +14,7 @@ pipeline{
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
-        stage('Setup') {
+        stage('Setup kubectl and eksctl binaries') {
             steps {
               script {
 
@@ -23,6 +23,8 @@ pipeline{
                   curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_\$(uname -s)_amd64.tar.gz" | tar xzf -
                   curl --silent -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
                   chmod u+x ./eksctl ./kubectl
+                  mv ./kubectl /usr/local/bin
+                  mv /tmp/eksctl /usr/local/bin
                   ls -l ./eksctl ./kubectl
                 """
               }
@@ -186,7 +188,7 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh '''
                         Cluster=$(eksctl get cluster | grep ${CLUSTER_NAME})  || true
                         if [ "$Cluster" == '' ]
@@ -211,7 +213,7 @@ pipeline{
         stage('Setting up Cloudwatch logs'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     echo "Setting up Cloudwatch logs."
                     sh "eksctl utils update-cluster-logging --enable-types all --approve --cluster ${CLUSTER_NAME}"
                 }    
@@ -221,8 +223,8 @@ pipeline{
         stage('Cluster setup'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials', region: '${AWS_REGION}') {
-                    echo "Setting up Cloudwatch logs."
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    echo "Cluster setup."
                     sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}"
                 }    
             }
