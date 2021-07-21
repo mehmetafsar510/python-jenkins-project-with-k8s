@@ -25,7 +25,6 @@ pipeline{
                   chmod u+x ./eksctl ./kubectl
                   sudo mv ./kubectl /usr/local/bin
                   sudo mv /tmp/eksctl /usr/local/bin
-                  ls -l ./eksctl ./kubectl
                 """
               }
             }
