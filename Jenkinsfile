@@ -198,6 +198,8 @@ pipeline{
                                 --ssh-access=true \
                                 --ssh-public-key=the_doctor_public.pem \
                                 --node-type t2.medium \
+                                --with-oidc \
+                                --managed \
                                 --nodes 1 --nodes-min 1 --nodes-max 2 \
                                 --node-volume-size 8 --name ${CLUSTER_NAME} \
                                 --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
