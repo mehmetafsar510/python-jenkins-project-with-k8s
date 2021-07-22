@@ -318,7 +318,7 @@ pipeline{
                     script {
                         env.ELB_DNS = sh(script:'aws elb describe-load-balancers --query LoadBalancerDescriptions[].CanonicalHostedZoneName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                     }
-                    sh "sed -i 's|{{DNS}}|$ELB_DNS|g' dnsrecord.json"
+                    sh "sed -i 's|{{DNS}}|dualstack.$ELB_DNS|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id Z07173933UX8PXKU4UCR5 --change-batch file://dnsrecord.json"
                     sleep(10)
                     sh "kubectl apply -f ingress-service.yaml"
@@ -341,14 +341,14 @@ pipeline{
               --force
             """
             sh """
+            aws ec2 detach-volume \
+              --volume-id ${EBS_VOLUME_ID} \
+            """
+            sh """
             aws rds delete-db-instance \
               --db-instance-identifier mysql-instance \
               --skip-final-snapshot \
               --delete-automated-backups
-            """
-            sh """
-            aws ec2 detach-volume \
-              --volume-id ${EBS_VOLUME_ID} \
             """
             sh """
             aws ec2 delete-volume \
