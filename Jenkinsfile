@@ -310,6 +310,21 @@ pipeline{
                 }                  
             }
         }
+
+        stage('dns-record'){
+            agent any
+            steps{
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    script {
+                        env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[*].[DNSName] --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
+                    }
+                    sh "sed -i 's|{{DNS}}|$ELB_DNS|g' dnsrecord.json"
+                    sh "aws route53 change-resource-record-sets --hosted-zone-id Z07173933UX8PXKU4UCR5 --change-batch file://dnsrecord.json"
+                    sleep(10)
+                    sh "kubectl apply -f ingress-service.yaml"
+                }                  
+            }
+        }
     
     }
     post {
@@ -350,7 +365,7 @@ pipeline{
             sh "kubectl delete -f k8s"
         }
         success {
-            echo 'You are Greattt...'
+            echo 'You are Greattt...You can visit phonebook.mehmetafsar.com'
         }
     }
 }
