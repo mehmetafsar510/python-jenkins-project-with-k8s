@@ -13,8 +13,6 @@ spec:
     metadata:
       labels:
         name: db
-  strategy:
-    type: Recreate
     spec:
       containers:
       - name: mysql
