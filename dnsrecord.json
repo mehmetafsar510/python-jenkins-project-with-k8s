@@ -6,7 +6,7 @@
                            "Name": "phonebook.mehmetafsar.com",
                            "Type": "A",
                            "AliasTarget":{
-                                   "HostedZoneId": "Z07173933UX8PXKU4UCR5",
+                                   "HostedZoneId": "Z35SXDOTRQ7X7K",
                                    "DNSName": "{{DNS}}",
                                    "EvaluateTargetHealth": false
                              }}
