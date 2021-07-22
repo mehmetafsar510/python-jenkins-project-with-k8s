@@ -16,8 +16,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        imagePullPolicy: Always
-        image: "mysql:5.7"
+        image: mysql:5.7
         ports:
         - containerPort: 3306
         args:
@@ -27,6 +26,8 @@ spec:
               name: config-db
           - secretRef:
               name: secret-db
+           
+
         volumeMounts:
           - name: mysql-persistent-storage
             mountPath: /var/lib/mysql
