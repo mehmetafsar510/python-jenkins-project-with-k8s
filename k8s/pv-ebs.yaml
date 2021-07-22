@@ -10,6 +10,9 @@ spec:
     storage: "10Gi" 
   accessModes:
     - "ReadWriteMany"
-  awsElasticBlockStore: 
-    fsType: "ext4"
-    volumeID: "{{EBS_VOLUME_ID}}"
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/mnt/data"
+ #awsElasticBlockStore: 
+ #  fsType: "ext4"
+ #  volumeID: "{{EBS_VOLUME_ID}}"

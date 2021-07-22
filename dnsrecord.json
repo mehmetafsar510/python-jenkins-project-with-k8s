@@ -1,0 +1,14 @@
+{
+    "Comment": "Creating Alias resource record sets in Route 53",
+    "Changes": [{
+               "Action": "CREATE",
+               "ResourceRecordSet": {
+                           "Name": "phonebook.mehmetafsar.com",
+                           "Type": "A",
+                           "AliasTarget":{
+                                   "HostedZoneId": "Z07173933UX8PXKU4UCR5",
+                                   "DNSName": "{{DNS}}",
+                                   "EvaluateTargetHealth": false
+                             }}
+                         }]
+}
