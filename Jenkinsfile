@@ -306,9 +306,7 @@ pipeline{
                     }
                     sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/deployment-db.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
-                    sleep(5)
-                    sh "kubectl create namespace phonebook"
-                    sh "kubectl apply --namespace phonebook -f k8s"
+                    sh "kubectl apply -f k8s"
                     sleep(5)
                 }                  
             }
@@ -343,6 +341,7 @@ pipeline{
               --region ${AWS_REGION}\
               --force
             """
+            sh "kubectl delete namespace phonebook"
             sh """
             aws ec2 detach-volume \
               --volume-id ${EBS_VOLUME_ID} \
