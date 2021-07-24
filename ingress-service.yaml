@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      -  phonebook.mehmetafsar.com
-      secretName: mafsar-cert
+      -  clarusway.mehmetafsar.com
+      secretName: clarus-cert
   rules:
-    - host: phonebook.mehmetafsar.com
+    - host: clarusway.mehmetafsar.com
       http:
         paths:
           - path: /?(.*)
