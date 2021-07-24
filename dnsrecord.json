@@ -3,7 +3,7 @@
     "Changes": [{
                "Action": "CREATE",
                "ResourceRecordSet": {
-                           "Name": "phonebook.mehmetafsar.com",
+                           "Name": "clarusway.mehmetafsar.com",
                            "Type": "A",
                            "AliasTarget":{
                                    "HostedZoneId": "Z35SXDOTRQ7X7K",
