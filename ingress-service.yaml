@@ -9,7 +9,7 @@ spec:
   tls:
     - hosts:
       -  phonebook.mehmetafsar.com
-      secretName: tls-secret
+      secretName: mafsar-cert
   rules:
     - host: phonebook.mehmetafsar.com
       http:
