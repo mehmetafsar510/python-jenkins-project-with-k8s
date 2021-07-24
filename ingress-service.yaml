@@ -4,13 +4,12 @@ metadata:
   name: ingress-service
   annotations:
     kubernetes.io/ingress.class: 'nginx'
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   tls:
     - hosts:
       -  phonebook.mehmetafsar.com
-      secretName: aks-ingress-tls
+      secretName: tls-secret
   rules:
     - host: phonebook.mehmetafsar.com
       http:
