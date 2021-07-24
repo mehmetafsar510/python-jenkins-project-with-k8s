@@ -322,6 +322,7 @@ pipeline{
                     sh "sed -i 's|{{DNS}}|dualstack.$ELB_DNS|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id Z07173933UX8PXKU4UCR5 --change-batch file://dnsrecord.json"
                     sleep(5)
+                    sh "kubectl apply -f ingress-service.yaml"
                     
                 }                  
             }
@@ -341,7 +342,6 @@ pipeline{
               --region ${AWS_REGION}\
               --force
             """
-            sh "kubectl delete namespace phonebook"
             sh """
             aws ec2 detach-volume \
               --volume-id ${EBS_VOLUME_ID} \
