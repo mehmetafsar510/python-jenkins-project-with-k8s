@@ -367,7 +367,7 @@ pipeline{
             sh "kubectl delete -f k8s"
         }
         success {
-            echo 'You are Greattt...You can visit phonebook.mehmetafsar.com'
+            echo 'You are Greattt...You can visit clarusway.mehmetafsar.com'
         }
     }
 }
