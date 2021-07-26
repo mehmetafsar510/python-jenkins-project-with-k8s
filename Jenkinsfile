@@ -307,7 +307,9 @@ pipeline{
                     sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/deployment-db.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh "kubectl apply -f k8s"
-                    sleep(5)
+                    sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
+                    sh "kubectl apply -f ingress-service.yaml"
+                    sleep(10)
                 }                  
             }
         }
@@ -321,8 +323,6 @@ pipeline{
                     }
                     sh "sed -i 's|{{DNS}}|dualstack.$ELB_DNS|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id Z07173933UX8PXKU4UCR5 --change-batch file://dnsrecord.json"
-                    sleep(5)
-                    sh "kubectl apply -f ingress-service.yaml"
                     
                 }                  
             }
@@ -367,7 +367,7 @@ pipeline{
             sh "kubectl delete -f k8s"
         }
         success {
-            echo 'You are Greattt...You can visit clarusway.mehmetafsar.com'
+            echo 'You are Greattt...You can visit clarus.mehmetafsar.com'
         }
     }
 }
