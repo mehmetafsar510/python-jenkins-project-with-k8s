@@ -3,7 +3,7 @@
     "Changes": [{
                "Action": "CREATE",
                "ResourceRecordSet": {
-                           "Name": "clarus.mehmetafsar.com",
+                           "Name": "{{FQDN}}",
                            "Type": "A",
                            "AliasTarget":{
                                    "HostedZoneId": "Z35SXDOTRQ7X7K",

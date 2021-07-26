@@ -11,6 +11,7 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
+        FQDN = "clarus.mehmetafsar.com"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -320,9 +321,11 @@ pipeline{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     script {
                         env.ELB_DNS = sh(script:'aws elb describe-load-balancers --query LoadBalancerDescriptions[].CanonicalHostedZoneName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
+                        env.ZONE_ID = sh(script:'aws route53 list-hosted-zones-by-name --dns-name mehmetafsar.com --query HostedZones[].Id --output text | cut -d/ -f3', returnStdout:true).trim()
                     }
                     sh "sed -i 's|{{DNS}}|dualstack.$ELB_DNS|g' dnsrecord.json"
-                    sh "aws route53 change-resource-record-sets --hosted-zone-id Z07173933UX8PXKU4UCR5 --change-batch file://dnsrecord.json"
+                    sh "sed -i 's|{{FQDN}}|$FQDN|g' dnsrecord.json"
+                    sh "aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://dnsrecord.json"
                     
                 }                  
             }
