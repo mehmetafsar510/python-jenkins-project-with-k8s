@@ -341,7 +341,7 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh "sed -i 's|{{SEC_NAME}}|$SEC_NAME|g' ingress-service.yaml"
+                    sh "sed -i 's|#secretName: {{SEC_NAME}}|secretName: $SEC_NAME|g' ingress-service.yaml"
                     sh "kubectl create namespace cert-manager"
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
@@ -352,7 +352,7 @@ pipeline{
                       --set installCRDs=true
                     """
                     sh """
-                      openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
+                      sudo openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
                           -out clarusway-cert.crt \
                           -keyout clarusway-cert.key \
                           -subj "/CN=$FQDN/O=$SEC_NAME"
