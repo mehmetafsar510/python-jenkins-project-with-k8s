@@ -310,7 +310,6 @@ pipeline{
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh "kubectl apply -f k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
-                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
                     sh "kubectl apply -f ingress-service.yaml"
                     sleep(10)
                 }                  
@@ -342,14 +341,14 @@ pipeline{
         failure {
             sh "rm -rf '${WORKSPACE}/.env'"
             sh """
+            aws ec2 detach-volume \
+              --volume-id ${EBS_VOLUME_ID} \
+            """
+            sh """
             aws ecr delete-repository \
               --repository-name ${APP_REPO_NAME} \
               --region ${AWS_REGION}\
               --force
-            """
-            sh """
-            aws ec2 detach-volume \
-              --volume-id ${EBS_VOLUME_ID} \
             """
             sh """
             aws rds delete-db-instance \
