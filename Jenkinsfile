@@ -382,6 +382,7 @@ pipeline{
         }
         failure {
             sh "rm -rf '${WORKSPACE}/.env'"
+            sh 'kubectl delete -f .'
             sh """
             aws ec2 detach-volume \
               --volume-id ${EBS_VOLUME_ID} \
