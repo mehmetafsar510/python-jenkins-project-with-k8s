@@ -324,7 +324,7 @@ pipeline{
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                         env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()
                     }
-                    sh "sed -i 's|{{DNS}}|dualstack.$ELB_DNS|g' dnsrecord.json"
+                    sh "sed -i 's|{{DNS}}|$ELB_DNS|g' dnsrecord.json"
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://dnsrecord.json"
                     
