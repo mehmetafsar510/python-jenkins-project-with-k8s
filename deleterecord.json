@@ -5,7 +5,13 @@
             "Action": "DELETE",
             "ResourceRecordSet": {
                 "Name": "{{FQDN}}",
-                "Type": "A"                
+                "Type": "A",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        'value'
+                    }
+                ]                
             }
         }
     ]
