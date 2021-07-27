@@ -11,8 +11,9 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "clarus.mehmetafsar.com"
+        FQDN = "clar.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
+        SEC_NAME = "clar-cert"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -20,13 +21,16 @@ pipeline{
             steps {
               script {
 
-                println "Getting the kubectl and eksctl binaries..."
+                println "Getting the kubectl helm and eksctl binaries..."
                 sh """
                   curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_\$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
                   curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/linux/amd64/kubectl
+                  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+                  chmod 700 get_helm.sh
                   chmod +x ./kubectl
                   sudo mv ./kubectl /usr/local/bin
                   sudo mv /tmp/eksctl /usr/local/bin
+                  ./get_helm.sh
                 """
               }
             }
@@ -331,6 +335,44 @@ pipeline{
                 }                  
             }
         }
+
+        stage('ssl-tls-record'){
+            agent any
+            steps{
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
+                    sh "sed -i 's|{{SEC_NAME}}|$SEC_NAME|g' ingress-service.yaml"
+                    sh "kubectl create namespace cert-manager"
+                    sh "helm repo add jetstack https://charts.jetstack.io"
+                    sh "helm repo update"
+                    sh """
+                      helm install cert-manager jetstack/cert-manager \
+                      --namespace cert-manager \
+                      --version v0.14.0 \
+                      --set installCRDs=true
+                    """
+                    sh """
+                      openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
+                          -out clarusway-cert.crt \
+                          -keyout clarusway-cert.key \
+                          -subj "/CN=$FQDN/O=$SEC_NAME"
+                    """
+                    sh '''
+                      SecretNm=$(kubectl get secret $SEC_NAME )  || true
+                      if [ "$SecretNm" == '' ]
+                      then
+                          kubectl create secret tls $SEC_NAME \
+                              --key clarusway-cert.key \
+                              --cert clarusway-cert.crt
+                    '''
+                    sh "kubectl --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
+                    sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
+                    sh "kubectl apply -f ingress-service.yaml"
+
+                    
+                }                  
+            }
+        }
     
     }
     post {
@@ -371,7 +413,7 @@ pipeline{
             sh "kubectl delete -f k8s"
         }
         success {
-            echo 'You are Greattt...You can visit clarus.mehmetafsar.com'
+            echo "You are Greattt...You can visit https://$FQDN"
         }
     }
 }
