@@ -358,12 +358,12 @@ pipeline{
                           -subj "/CN=$FQDN/O=$SEC_NAME"
                     """
                     sh '''
-                      SecretNm=$(kubectl get secrets  | grep -i $SEC_NAME  )  || true
-                      if [ "$SecretNm" == '' ]
-                      then
-                          kubectl create secret tls $SEC_NAME \
-                              --key clarusway-cert.key \
-                              --cert clarusway-cert.crt
+                        SecretNm=$(kubectl get secrets | grep -i $SEC_NAME) || true
+                        if [ "$SecretNm" == '' ]
+                        then
+                            kubectl create secret tls $SEC_NAME \
+                                --key clarusway-cert.key \
+                                --cert clarusway-cert.crt
                     '''
                     sh "kubectl --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
