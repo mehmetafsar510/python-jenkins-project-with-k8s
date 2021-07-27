@@ -364,6 +364,7 @@ pipeline{
                             kubectl create secret tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
+                        fi
                     '''
                     sh "kubectl --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
