@@ -17,7 +17,7 @@ pipeline{
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
-        stage('Setup kubectl and eksctl binaries') {
+        stage('Setup kubectl helm and eksctl binaries') {
             steps {
               script {
 

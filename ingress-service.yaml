@@ -11,7 +11,7 @@ spec:
   tls:
     - hosts:
       -  clarus.mehmetafsar.com
-      secretName: {{SEC_NAME}}
+      #secretName: {{SEC_NAME}}
   rules:
     - host: clarus.mehmetafsar.com
       http:
