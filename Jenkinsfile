@@ -358,7 +358,7 @@ pipeline{
                           -subj "/CN=$FQDN/O=$SEC_NAME"
                     """
                     sh '''
-                      SecretNm=$(kubectl get secret $SEC_NAME )  || true
+                      SecretNm=$(kubectl get secrets  | grep -i $SEC_NAME  )  || true
                       if [ "$SecretNm" == '' ]
                       then
                           kubectl create secret tls $SEC_NAME \
