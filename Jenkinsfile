@@ -328,6 +328,13 @@ pipeline{
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                         env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()
                     }
+                    sh '''
+                        RecordSet=$(kubectl get namespaces | grep -i cert-manager) || true
+                        if [ "$NameSpace" != '' ]
+                        then
+                            aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://deleterecord.json
+                        fi
+                    '''
                     sh "sed -i 's|{{DNS}}|$ELB_DNS|g' dnsrecord.json"
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://dnsrecord.json"
@@ -342,7 +349,13 @@ pipeline{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
                     sh "sed -i 's|#secretName: {{SEC_NAME}}|secretName: $SEC_NAME|g' ingress-service.yaml"
-                    sh "kubectl create namespace cert-manager"
+                    sh '''
+                        NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
+                        if [ "$NameSpace" == '' ]
+                        then
+                            kubectl create namespace cert-manager
+                        fi
+                    '''
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
                     sh """

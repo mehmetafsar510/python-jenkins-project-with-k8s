@@ -1,0 +1,12 @@
+{
+    "Comment": "Delete single record set",
+    "Changes": [
+        {
+            "Action": "DELETE",
+            "ResourceRecordSet": {
+                "Name": "{{FQDN}}",
+                "Type": "A"                
+            }
+        }
+    ]
+}
