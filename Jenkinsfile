@@ -371,6 +371,7 @@ pipeline{
                             kubectl create namespace cert-manager
                         else
                             kubectl create namespace $SEC_NAME
+                            helm delete cert-manager --namespace cert-manager
                         fi
                     '''
                     sh "helm repo add jetstack https://charts.jetstack.io"
