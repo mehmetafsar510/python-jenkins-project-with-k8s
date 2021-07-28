@@ -351,7 +351,6 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh "sed -i 's|#secretName: {{SEC_NAME}}|secretName: $SEC_NAME|g' ingress-service.yaml"
                     sh '''
                         NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
                         if [ "$NameSpace" == '' ]
@@ -371,13 +370,13 @@ pipeline{
                       sudo openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
                           -out clarusway-cert.crt \
                           -keyout clarusway-cert.key \
-                          -subj "/CN=$FQDN/O=$SEC_NAME"
+                          -subj "/CN=$FQDN/O=clar-cert"
                     """
                     sh '''
-                        SecretNm=$(kubectl get secrets | grep -i $SEC_NAME) || true
+                        SecretNm=$(kubectl get secrets | grep -i clar-cert) || true
                         if [ "$SecretNm" == '' ]
                         then
-                            kubectl create secret tls $SEC_NAME \
+                            kubectl create secret tls clar-cert \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         fi

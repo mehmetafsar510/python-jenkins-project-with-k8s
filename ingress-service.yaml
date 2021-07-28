@@ -11,7 +11,7 @@ spec:
   tls:
     - hosts:
       -  clar.mehmetafsar.com
-      #secretName: {{SEC_NAME}}
+      secretName: clar-cert
   rules:
     - host: clar.mehmetafsar.com
       http:
