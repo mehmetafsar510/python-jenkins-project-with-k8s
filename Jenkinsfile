@@ -328,16 +328,16 @@ pipeline{
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                         env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()  
                     }
-                    sh """
+                    sh "sed -i 's|{{DNS}}|$ELB_DNS|g' deleterecord.json"
+                    sh "sed -i 's|{{FQDN}}|$FQDN|g' deleterecord.json"
+                    sh '''
                         RecordSet=$(aws route53 list-resource-record-sets   --hosted-zone-id $ZONE_ID   --query ResourceRecordSets[] | grep -i $FQDN) || true
-                        if [ '$RecordSet' != '' ]
+                        if [ "$RecordSet" != '' ]
                         then
-                            sed -i 's|{{FQDN}}|$FQDN|g' deleterecord.json
-                            sed -i 's|{{DNS}}|$ELB_DNS|g' deleterecord.json
                             aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://deleterecord.json
                         
                         fi
-                    """
+                    '''
                     
                 }                  
             }
