@@ -370,8 +370,8 @@ pipeline{
                         then
                             kubectl create namespace cert-manager
                         else
+                            helm delete cert-manager --namespace cert-manager
                             kubectl delete namespace cert-manager
-                            sleep(5)
                             kubectl create namespace cert-manager
                         fi
                     '''
