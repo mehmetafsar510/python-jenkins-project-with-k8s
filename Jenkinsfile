@@ -11,9 +11,9 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "clar.mehmetafsar.com"
+        FQDN = "clarusway.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
-        SEC_NAME = "clar-cert"
+        SEC_NAME = "clarus-cert"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -369,13 +369,15 @@ pipeline{
                         if [ "$NameSpace" == '' ]
                         then
                             kubectl create namespace cert-manager
+                        else
+                            kubectl create namespace $SEC_NAME
                         fi
                     '''
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
                     sh """
                       helm install cert-manager jetstack/cert-manager \
-                      --namespace cert-manager \
+                      --namespace \$SEC_NAME \
                       --version v0.14.0 \
                       --set installCRDs=true
                     """
@@ -383,13 +385,13 @@ pipeline{
                       sudo openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
                           -out clarusway-cert.crt \
                           -keyout clarusway-cert.key \
-                          -subj "/CN=$FQDN/O=clar-cert"
+                          -subj "/CN=$FQDN/O=$SEC_NAME"
                     """
                     sh '''
-                        SecretNm=$(kubectl get secrets | grep -i clar-cert) || true
+                        SecretNm=$(kubectl get secrets | grep -i $SEC_NAME) || true
                         if [ "$SecretNm" == '' ]
                         then
-                            kubectl create secret tls clar-cert \
+                            kubectl create secret tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         fi
