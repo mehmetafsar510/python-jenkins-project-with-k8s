@@ -404,7 +404,7 @@ pipeline{
                                 --cert clarusway-cert.crt
                         fi
                     '''
-                    sh "kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
+                    sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
                     sleep(10)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
                     sh "kubectl apply -f ingress-service.yaml"
