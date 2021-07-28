@@ -320,6 +320,28 @@ pipeline{
             }
         }
 
+        stage('dns-record-control'){
+            agent any
+            steps{
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    script {
+                        env.VALUE_ID = sh(script:"aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query 'ResourceRecordSets[?Name==`$FQDN.`]' | grep -i Value", returnStdout:true).trim()  
+                    }
+                    sh '''
+                        RecordSet=$(aws route53 list-resource-record-sets   --hosted-zone-id $ZONE_ID   --query ResourceRecordSets[] | grep -i $FQDN) || true
+                        if [ "$RecordSet" != '' ]
+                        then
+                            sed -i 's|{{FQDN}}|$FQDN|g' deleterecord.json
+                            sed -i 's|'value'|$VALUE_ID|g' deleterecord.json
+                            aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://deleterecord.json
+                        
+                        fi
+                    '''
+                    
+                }                  
+            }
+        }
+
         stage('dns-record'){
             agent any
             steps{
