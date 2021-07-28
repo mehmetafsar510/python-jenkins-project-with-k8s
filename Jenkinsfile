@@ -314,7 +314,7 @@ pipeline{
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh "kubectl apply -f k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
-                    sleep(5)
+                    sleep(10)
                     sh "kubectl apply -f ingress-service.yaml"
                     sleep(10)
                 }                  
@@ -365,6 +365,7 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
+                    sh "kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
                     sh '''
                         NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
                         if [ "$NameSpace" == '' ]
@@ -405,7 +406,8 @@ pipeline{
                         fi
                     '''
                     sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
-                    sleep(10)
+                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
+                    sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
                     sh "kubectl apply -f ingress-service.yaml"
 
