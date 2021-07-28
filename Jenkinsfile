@@ -326,18 +326,8 @@ pipeline{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     script {
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
-                        env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()
-                        env.VALUE_ID = sh(script:"aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query 'ResourceRecordSets[?Name==`$FQDN.`]' | grep -i Value", returnStdout:true).trim()
+                        env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()   
                     }
-                    sh "sed -i 's|{{FQDN}}|$FQDN|g' deleterecord.json"
-                    sh "sed -i 's|'value'|$VALUE_ID|g' deleterecord.json"
-                    sh '''
-                        RecordSet=$(aws route53 list-resource-record-sets   --hosted-zone-id $ZONE_ID   --query ResourceRecordSets[] | grep -i $FQDN) || true
-                        if [ "$RecordSet" != '' ]
-                        then
-                            aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://deleterecord.json
-                        fi
-                    '''
                     sh "sed -i 's|{{DNS}}|$ELB_DNS|g' dnsrecord.json"
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' dnsrecord.json"
                     sh "aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch file://dnsrecord.json"
