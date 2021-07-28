@@ -11,9 +11,9 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "clarusway.mehmetafsar.com"
+        FQDN = "clarus.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
-        SEC_NAME = "clarus-cert"
+        SEC_NAME = "clar-cert"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -365,7 +365,6 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh "kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
                     sh '''
                         NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
                         if [ "$NameSpace" == '' ]
