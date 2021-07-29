@@ -365,6 +365,7 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
+                    sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sh '''
                         NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
                         if [ "$NameSpace" == '' ]
@@ -381,7 +382,8 @@ pipeline{
                     sh """
                       helm install cert-manager jetstack/cert-manager \
                       --namespace cert-manager \
-                      --version v0.14.0 \
+                      --version v0.11.1 \
+                      --set webhook.enabled=false \
                       --set installCRDs=true
                     """
                     sh """
@@ -404,9 +406,6 @@ pipeline{
                                 --cert clarusway-cert.crt
                         fi
                     '''
-                    sh "kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
-                    sh "kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
-                    sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager-no-webhook.yaml"
                     sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
                     sh "kubectl apply -f ingress-service.yaml"
