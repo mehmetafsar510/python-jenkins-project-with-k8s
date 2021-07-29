@@ -404,14 +404,9 @@ pipeline{
                                 --cert clarusway-cert.crt
                         fi
                     '''
-                    sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
-                    sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.14.1/cert-manager.crds.yaml"
-                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
                     sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
-                    sh "kubectl apply -f ingress-service.yaml"
-
-                    
+                    sh "kubectl apply -f ingress-service.yaml"              
                 }                  
             }
         }
