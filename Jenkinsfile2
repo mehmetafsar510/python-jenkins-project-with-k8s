@@ -408,9 +408,7 @@ pipeline{
                     '''
                     sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
-                    sh "kubectl apply -f ingress-service.yaml"
-
-                    
+                    sh "kubectl apply -f ingress-service.yaml"    
                 }                  
             }
         }
