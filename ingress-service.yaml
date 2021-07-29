@@ -10,8 +10,8 @@ metadata:
 spec:
   tls:
     - hosts:
-      -  clarus.mehmetafsar.com
-      secretName: clar-cert
+      -  clar.mehmetafsar.com
+      secretName: clarus-cert
   rules:
     - host: clarus.mehmetafsar.com
       http:

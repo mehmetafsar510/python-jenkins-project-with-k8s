@@ -11,9 +11,9 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "clarus.mehmetafsar.com"
+        FQDN = "clar.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
-        SEC_NAME = "clar-cert"
+        SEC_NAME = "clarus-cert"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -315,7 +315,6 @@ pipeline{
                     sh "kubectl apply -f k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(10)
-                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
                     sh "kubectl apply -f ingress-service.yaml"
                     sleep(10)
                 }                  
@@ -406,6 +405,8 @@ pipeline{
                         fi
                     '''
                     sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.0/cert-manager.yaml"
+                    sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.14.1/cert-manager.crds.yaml"
+                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
                     sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
                     sh "kubectl apply -f ingress-service.yaml"
