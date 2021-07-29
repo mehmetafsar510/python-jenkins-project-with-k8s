@@ -312,10 +312,20 @@ pipeline{
                     }
                     sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/deployment-db.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
-                    sh "kubectl apply -f k8s"
-                    sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
+                    sh '''
+                        NameSpaces=$(kubectl get namespaces | grep -i phonebook) || true
+                        if [ "$NameSpaces" == '' ]
+                        then
+                            kubectl create namespace phonebook
+                        else
+                            kubectl delete namespace phonebook
+                            kubectl create namespace phonebook
+                        fi
+                    '''
+                    sh "kubectl apply --namespace phonebook -f  k8s"
+                    sh "kubectl apply --namespace phonebook -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(10)
-                    sh "kubectl apply -f ingress-service.yaml"
+                    sh "kubectl apply --namespace phonebook -f ingress-service.yaml"
                     sleep(10)
                 }                  
             }
@@ -381,7 +391,7 @@ pipeline{
                     sh """
                       helm install cert-manager jetstack/cert-manager \
                       --namespace cert-manager \
-                      --version v0.14.0 \
+                      --version v1.3.0 \
                       --set installCRDs=true
                     """
                     sh """
@@ -394,19 +404,19 @@ pipeline{
                         SecretNm=$(kubectl get secrets | grep -i $SEC_NAME) || true
                         if [ "$SecretNm" == '' ]
                         then
-                            kubectl create secret tls $SEC_NAME \
+                            kubectl create secret --namespace phonebook  tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         else
-                            kubectl delete secret $SEC_NAME
-                            kubectl create secret tls $SEC_NAME \
+                            kubectl delete secret --namespace phonebook $SEC_NAME
+                            kubectl create secret --namespace phonebook tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         fi
                     '''
                     sleep(5)
-                    sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
-                    sh "kubectl apply -f ingress-service.yaml"              
+                    sh "kubectl apply --namespace phonebook -f ssl-tls-cluster-issuer.yaml"
+                    sh "kubectl apply --namespace phonebook -f ingress-service.yaml"              
                 }                  
             }
         }
