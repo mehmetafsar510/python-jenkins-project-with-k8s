@@ -405,7 +405,7 @@ pipeline{
                         fi
                     '''
                     sh "kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
-                    sh "kubectl delete --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
+                    sh "kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.crds.yaml"
                     sh "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager-no-webhook.yaml"
                     sleep(5)
                     sh "kubectl apply -f ssl-tls-cluster-issuer.yaml"
