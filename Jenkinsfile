@@ -375,24 +375,14 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh '''
-                        NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
-                        if [ "$NameSpace" == '' ]
-                        then
-                            kubectl create namespace cert-manager
-                        else
-                            helm delete cert-manager --namespace cert-manager
-                            kubectl delete namespace cert-manager
-                            kubectl create namespace cert-manager
-                        fi
-                    '''
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
                     sh """
                       helm install cert-manager jetstack/cert-manager \
-                      --namespace cert-manager \
-                      --version v1.3.0 \
-                      --set installCRDs=true
+                      --namespace phonebook \
+                      --version v1.3.1 \
+                      --set installCRDs=true \
+                      --set nodeSelector."beta\.kubernetes\.io/os"=linux 
                     """
                     sh """
                       sudo openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
