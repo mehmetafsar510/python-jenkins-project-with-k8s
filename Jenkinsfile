@@ -315,6 +315,7 @@ pipeline{
                     sh "kubectl apply -f k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(10)
+                    sh "kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission"
                     sh "kubectl apply -f ingress-service.yaml"
                     sleep(10)
                 }                  
