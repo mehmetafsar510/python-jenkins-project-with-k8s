@@ -303,7 +303,7 @@ pipeline{
             }
         }
 
-        stage('apply-k8s'){
+        stage('apply-k8s-install cert-manager'){
             agent any
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
@@ -322,6 +322,26 @@ pipeline{
                             kubectl create namespace phonebook
                         fi
                     '''
+                    sh "helm repo add jetstack https://charts.jetstack.io"
+                    sh "helm repo update"
+                    sh '''
+                        NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
+                        if [ "$NameSpace" == '' ]
+                        then
+                            kubectl create namespace cert-manager
+                        else
+                            helm delete cert-manager --namespace cert-manager
+                            kubectl delete namespace cert-manager
+                            kubectl create namespace cert-manager
+                        fi
+                    '''
+                    sh """
+                      helm install cert-manager jetstack/cert-manager \
+                      --namespace cert-manager \
+                      --version v0.11.1 \
+                      --set webhook.enabled=false \
+                      --set installCRDs=true
+                    """
                     sh "kubectl apply --namespace phonebook -f  k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
@@ -378,26 +398,6 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh "helm repo add jetstack https://charts.jetstack.io"
-                    sh "helm repo update"
-                    sh '''
-                        NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
-                        if [ "$NameSpace" == '' ]
-                        then
-                            kubectl create namespace cert-manager
-                        else
-                            helm delete cert-manager --namespace cert-manager
-                            kubectl delete namespace cert-manager
-                            kubectl create namespace cert-manager
-                        fi
-                    '''
-                    sh """
-                      helm install cert-manager jetstack/cert-manager \
-                      --namespace cert-manager \
-                      --version v0.11.1 \
-                      --set webhook.enabled=false \
-                      --set installCRDs=true
-                    """
                     sh """
                       sudo openssl req -x509 -nodes -days 90 -newkey rsa:2048 \
                           -out clarusway-cert.crt \
