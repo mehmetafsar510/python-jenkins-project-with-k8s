@@ -11,9 +11,10 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "clar.mehmetafsar.com"
+        FQDN = "clarusway.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
-        SEC_NAME = "clarus-cert"
+        SEC_NAME = "clar-cert"
+        NM_SP = "phone"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -313,20 +314,21 @@ pipeline{
                     sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/deployment-db.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh '''
-                        NameSpaces=$(kubectl get namespaces | grep -i phonebook) || true
+                        NameSpaces=$(kubectl get namespaces | grep -i $NM_SP) || true
                         if [ "$NameSpaces" == '' ]
                         then
-                            kubectl create namespace phonebook
+                            kubectl create namespace $NM_SP
                         else
-                            kubectl delete namespace phonebook
-                            kubectl create namespace phonebook
+                            kubectl delete namespace $NM_SP
+                            kubectl create namespace $NM_SP
                         fi
                     '''
-                    sh "kubectl apply --namespace phonebook -f  k8s"
+                    sh "sed -i 's|{{ns}}|$NM_SP|g' k8s/configmap-app.yaml"
+                    sh "kubectl apply --namespace $NM_SP -f  k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(5)
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
-                    sh "kubectl apply --namespace phonebook -f ingress-service.yaml"
+                    sh "kubectl apply --validate=false --namespace $NM_SP -f ingress-service.yaml"
                     sleep(10)
                 }                  
             }
@@ -406,22 +408,22 @@ pipeline{
                         SecretNm=$(kubectl get secrets | grep -i $SEC_NAME) || true
                         if [ "$SecretNm" == '' ]
                         then
-                            kubectl create secret --namespace phonebook  tls $SEC_NAME \
+                            kubectl create secret --namespace $NM_SP  tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         else
-                            kubectl delete secret --namespace phonebook $SEC_NAME
-                            kubectl create secret --namespace phonebook tls $SEC_NAME \
+                            kubectl delete secret --namespace $NM_SP $SEC_NAME
+                            kubectl create secret --namespace $NM_SP tls $SEC_NAME \
                                 --key clarusway-cert.key \
                                 --cert clarusway-cert.crt
                         fi
                     '''
                     sleep(5)
                     sh "sudo mv -f ingress-service-https.yaml ingress-service.yaml" 
-                    sh "kubectl apply --namespace phonebook -f ssl-tls-cluster-issuer.yaml"
+                    sh "kubectl apply --namespace $NM_SP -f ssl-tls-cluster-issuer.yaml"
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
                     sh "sed -i 's|{{SEC_NAME}}|$SEC_NAME|g' ingress-service.yaml"
-                    sh "kubectl apply --namespace phonebook -f ingress-service.yaml"              
+                    sh "kubectl apply --namespace $NM_SP -f ingress-service.yaml"              
                 }                  
             }
         }
