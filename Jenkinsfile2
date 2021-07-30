@@ -314,6 +314,7 @@ pipeline{
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh "kubectl apply -f k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
+                    sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sleep(10)
                     sh "kubectl apply -f ingress-service.yaml"
                     sleep(10)
@@ -365,7 +366,6 @@ pipeline{
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "sed -i 's|#cert-manager.io/cluster-issuer: letsencrypt|cert-manager.io/cluster-issuer: letsencrypt|g' ingress-service.yaml"
-                    sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sh '''
                         NameSpace=$(kubectl get namespaces | grep -i cert-manager) || true
                         if [ "$NameSpace" == '' ]
