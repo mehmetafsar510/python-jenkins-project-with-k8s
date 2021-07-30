@@ -11,7 +11,7 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "aşkımesma.mehmetafsar.com"
+        FQDN = "askımesma.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
         SEC_NAME = "mehmet-cert"
         NM_SP = "mehmet"
