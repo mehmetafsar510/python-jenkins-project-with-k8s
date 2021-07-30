@@ -324,7 +324,6 @@ pipeline{
                     '''
                     sh "kubectl apply --namespace phonebook -f  k8s"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
-                    sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sleep(5)
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
                     sh "kubectl apply --namespace phonebook -f ingress-service.yaml"
@@ -376,6 +375,7 @@ pipeline{
             agent any
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
                     sh '''
@@ -417,7 +417,7 @@ pipeline{
                         fi
                     '''
                     sleep(5)
-                    sh "sudo mv -f ingress-service1.yaml ingress-service.yaml" 
+                    sh "sudo mv -f ingress-service-https.yaml ingress-service.yaml" 
                     sh "kubectl apply --namespace phonebook -f ssl-tls-cluster-issuer.yaml"
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
                     sh "sed -i 's|{{SEC_NAME}}|$SEC_NAME|g' ingress-service.yaml"
