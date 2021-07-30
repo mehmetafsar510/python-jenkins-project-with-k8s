@@ -303,7 +303,7 @@ pipeline{
             }
         }
 
-        stage('apply-k8s-install cert-manager'){
+        stage('apply-k8s'){
             agent any
             steps{
                 withAWS(credentials: 'mycredentials', region: 'us-east-1') {
@@ -420,6 +420,8 @@ pipeline{
                     '''
                     sleep(5)
                     sh "kubectl apply --namespace phonebook -f ssl-tls-cluster-issuer.yaml"
+                    sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
+                    sh "sed -i 's|{{SEC_NAME}}|$SEC_NAME|g' ingress-service.yaml"
                     sh "kubectl apply --namespace phonebook -f ingress-service.yaml"              
                 }                  
             }
