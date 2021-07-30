@@ -317,7 +317,7 @@ pipeline{
                     sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sleep(10)
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
-                    sh "kubectl apply -f ingress-service.yaml"
+                    sh "kubectl apply --validate=false  -f ingress-service.yaml"
                     sleep(10)
                 }                  
             }
