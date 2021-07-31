@@ -11,10 +11,10 @@ pipeline{
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
         CLUSTER_NAME = "mehmet-cluster"
-        FQDN = "askimesma.mehmetafsar.com"
+        FQDN = "clarusway.mehmetafsar.com"
         DOMAIN_NAME = "mehmetafsar.com"
         SEC_NAME = "mehmet-cert"
-        NM_SP = "mehmet"
+        NM_SP = "phonebook"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
