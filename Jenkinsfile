@@ -6,7 +6,7 @@ pipeline{
         MYSQL_DATABASE_DB = "phonebook"
         MYSQL_DATABASE_PORT = 3306
         PATH="/usr/local/bin/:${env.PATH}"
-        ECR_REGISTRY = "646075469151.dkr.ecr.us-east-1.amazonaws.com"
+        ECR_REGISTRY = "717860527362.dkr.ecr.us-east-1.amazonaws.com"
         APP_REPO_NAME= "phonebook/app"
         CFN_KEYPAIR="the-doctor"
         AWS_REGION = "us-east-1"
@@ -131,7 +131,7 @@ pipeline{
             steps{
                 echo 'creating ECR Repository'
                 sh '''
-                    RepoArn=$(aws ecr describe-repositories | grep ${APP_REPO_NAME} |cut -d '"' -f 4| head -n 1 )  || true
+                    RepoArn=$(aws ecr describe-repositories --region ${AWS_REGION} | grep ${APP_REPO_NAME} |cut -d '"' -f 4| head -n 1 )  || true
                     if [ "$RepoArn" == '' ]
                     then
                         aws ecr create-repository \
