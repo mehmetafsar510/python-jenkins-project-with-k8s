@@ -194,7 +194,7 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh '''
                         Cluster=$(eksctl get cluster --region ${AWS_REGION} | grep ${CLUSTER_NAME})  || true
                         if [ "$Cluster" == '' ]
@@ -222,7 +222,7 @@ pipeline{
         stage('Setting up Cloudwatch logs'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     echo "Setting up Cloudwatch logs."
                     sh "eksctl utils update-cluster-logging --enable-types all --approve --cluster ${CLUSTER_NAME}"
                 }    
@@ -232,7 +232,7 @@ pipeline{
         stage('Cluster setup'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     echo "Cluster setup."
                     sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}"
                 }    
@@ -241,7 +241,7 @@ pipeline{
 
         stage('Test the cluster') {
             steps {
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     echo "Testing if the K8s cluster is ready or not"
                 script {
                     while(true) {
@@ -307,7 +307,7 @@ pipeline{
         stage('apply-k8s'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     script {
                         env.EBS_VOLUME_ID = sh(script:"aws ec2 describe-volumes --filters Name=tag:Name,Values='k8s-python-mysql2' | grep VolumeId |cut -d '\"' -f 4| head -n 1", returnStdout: true).trim()
                     }
@@ -338,7 +338,7 @@ pipeline{
         stage('dns-record-control'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     script {
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                         env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()  
@@ -361,7 +361,7 @@ pipeline{
         stage('dns-record'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     script {
                         env.ELB_DNS = sh(script:'aws elbv2 describe-load-balancers --query LoadBalancers[].DNSName --output text | sed "s/\\s*None\\s*//g"', returnStdout:true).trim()
                         env.ZONE_ID = sh(script:"aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query HostedZones[].Id --output text | cut -d/ -f3", returnStdout:true).trim()   
@@ -377,7 +377,7 @@ pipeline{
         stage('ssl-tls-record'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials1', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
                     sh "kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml"
                     sh "helm repo add jetstack https://charts.jetstack.io"
                     sh "helm repo update"
