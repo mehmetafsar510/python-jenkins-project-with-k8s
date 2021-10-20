@@ -317,7 +317,7 @@ pipeline{
                     }
                     sh "aws ec2 attach-volume --device /dev/sdf --instance-id $NODE_INSTANCE_ID --volume-id $EBS_VOLUME_ID"
                     sh "mssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no --region ${AWS_REGION} ${NODE_INSTANCE_ID} sudo mkfs -t xfs /dev/xvdf"
-                    sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/pv-ebs.yaml"
+                    sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/pv-static/pv-ebs.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh '''
                         NameSpaces=$(kubectl get namespaces | grep -i $NM_SP) || true

@@ -2,8 +2,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: clarus-pv-claim
-  labels:
-    type: clarus-pv-claim
 spec:
   accessModes:
     - ReadWriteOnce
