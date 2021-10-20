@@ -299,7 +299,7 @@ pipeline{
                         aws ec2 create-volume \
                             --availability-zone us-east-1d\
                             --volume-type gp3\
-                            --size 3 \
+                            --size 5 \
                             --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=k8s-python-mysql2}]'
                         
                     fi
