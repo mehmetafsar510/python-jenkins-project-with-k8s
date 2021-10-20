@@ -194,7 +194,7 @@ pipeline{
         stage('create-cluster'){
             agent any
             steps{
-                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {       // aws step pluginn**
                     sh '''
                         Cluster=$(eksctl get cluster --region ${AWS_REGION} | grep ${CLUSTER_NAME})  || true
                         if [ "$Cluster" == '' ]
@@ -325,7 +325,7 @@ pipeline{
                     '''
                     sh "sed -i 's|{{ns}}|$NM_SP|g' k8s/configmap-app.yaml"
                     sh "kubectl apply --namespace $NM_SP -f  k8s"
-                    sh "kubectl apply --namespace $NM_SP -f  auto-scaling"
+                    sh "kubectl apply -f auto-scaling"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(5)
                     sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
