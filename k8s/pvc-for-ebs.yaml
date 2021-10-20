@@ -7,9 +7,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-resources:
-  requests:
-    storage: 3Gi
-   selector:
-    matchLabels:
-      type: aws-pv
+  resources:
+    requests:
+      storage: 3Gi
+    selector:
+      matchLabels:
+        type: aws-pv
