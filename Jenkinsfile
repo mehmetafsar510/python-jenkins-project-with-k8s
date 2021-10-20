@@ -14,7 +14,7 @@ pipeline{
         FQDN = "clarusway.mehmetafsar.net"
         DOMAIN_NAME = "mehmetafsar.net"
         SEC_NAME = "mehmet-cert"
-        NM_SP = "mehmet"
+        NM_SP = "phonebook"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
@@ -328,12 +328,31 @@ pipeline{
                     sh "kubectl apply -f auto-scaling"
                     sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.35.0/deploy/static/provider/aws/deploy.yaml"
                     sleep(5)
-                    sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
-                    sh "kubectl apply --validate=false --namespace $NM_SP -f ingress-service.yaml"
-                    sleep(10)
                 }                  
             }
         }
+
+        stage('apply ingress') {
+            steps {
+                withAWS(credentials: 'mycredentials', region: 'us-east-1') {
+                    echo "Testing if the aws-load-balancer-controller role is ready or not"
+                script {
+                    while(true) {
+                        try {
+                          sh "sed -i 's|{{FQDN}}|$FQDN|g' ingress-service.yaml"
+                          sh "kubectl apply --validate=false --namespace $NM_SP -f ingress-service.yaml"
+                          sleep(15)
+                          break
+                        }
+                        catch(Exception) {
+                          echo 'Could not apply ingress please wait'
+                          sleep(5)  
+                        } 
+                    }
+                }
+            }
+        }
+    }
 
         stage('dns-record-control'){
             agent any
