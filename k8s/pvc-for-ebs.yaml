@@ -2,10 +2,14 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: clarus-pv-claim
+  labels:
+    type: clarus-pv-claim
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 3Gi
-  volumeName: aws-pv 
+    selector:
+      matchLabels:
+        type: aws-pv
