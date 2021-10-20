@@ -35,9 +35,3 @@ spec:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
           claimName: clarus-pv-claim
-      #volumes:
-      #- name: test-volume
-    # #This AWS EBS volume must already exist.
-      #  awsElasticBlockStore:
-      #    volumeID: "{{EBS_VOLUME_ID}}"
-      #    fsType: ext4
