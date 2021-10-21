@@ -4,9 +4,9 @@ metadata:
   name: aws-pv
 spec:
   capacity:
-    storage: 3Gi
+    storage: 5Gi
   accessModes:
     - ReadWriteOnce
   awsElasticBlockStore:
     volumeID: {{EBS_VOLUME_ID}}
-    fsType: xfs
+    fsType: ext4
