@@ -297,8 +297,8 @@ pipeline{
                     if [ "$VolumeId" == '' ]
                     then
                         aws ec2 create-volume \
-                            --availability-zone us-east-1d\
-                            --volume-type gp3\
+                            --availability-zone $EBS_VOLUME_REGION \
+                            --volume-type gp3 \
                             --size 5 \
                             --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=k8s-python-mysql2}]'
                         
@@ -315,9 +315,9 @@ pipeline{
                         env.EBS_VOLUME_ID = sh(script:"aws ec2 describe-volumes --filters Name=tag:Name,Values='k8s-python-mysql2' | grep VolumeId |cut -d '\"' -f 4| head -n 1", returnStdout: true).trim()
                         env.NODE_INSTANCE_ID = sh(script:"aws ec2 describe-instances --filters Name=tag:kubernetes.io/cluster/mehmet-cluster,Values='owned' | grep InstanceId |cut -d '\"' -f 4| head -n 1", returnStdout: true).trim()
                     }
-                    sh "aws ec2 attach-volume --device /dev/sdf --instance-id $NODE_INSTANCE_ID --volume-id $EBS_VOLUME_ID"
-                    sh "mssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no --region ${AWS_REGION} ${NODE_INSTANCE_ID} sudo mkfs -t xfs /dev/xvdf"
-                    sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/pv-static/pv-ebs.yaml"
+                    //sh "aws ec2 attach-volume --device /dev/sdf --instance-id $NODE_INSTANCE_ID --volume-id $EBS_VOLUME_ID"
+                    //sh "mssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no --region ${AWS_REGION} ${NODE_INSTANCE_ID} sudo mkfs -t xfs /dev/xvdf"
+                    sh "sed -i 's/{{EBS_VOLUME_ID}}/$EBS_VOLUME_ID/g' k8s/pv-ebs.yaml"
                     sh "sed -i 's|{{ECR_REGISTRY}}|$ECR_REGISTRY/$APP_REPO_NAME:latest|g' k8s/deployment-app.yaml"
                     sh '''
                         NameSpaces=$(kubectl get namespaces | grep -i $NM_SP) || true
