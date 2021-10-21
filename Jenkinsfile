@@ -14,7 +14,7 @@ pipeline{
         FQDN = "clarusway.mehmetafsar.net"
         DOMAIN_NAME = "mehmetafsar.net"
         SEC_NAME = "mehmet-cert"
-        NM_SP = "phonebook"
+        NM_SP = "mehmet"
         GIT_FOLDER = sh(script:'echo ${GIT_URL} | sed "s/.*\\///;s/.git$//"', returnStdout:true).trim()
     }
     stages{
